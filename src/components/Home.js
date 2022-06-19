@@ -31,7 +31,7 @@ export default function Home() {
                     <Button fullWidth
                         variant="contained"
                         onClick={() => {
-
+                            navigate('/account')
                         }}>Kelola akun pelanggan</Button>
                     <br /> <br />
                     <Button fullWidth

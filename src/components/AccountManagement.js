@@ -36,7 +36,7 @@ export default function AccountManagement() {
                     <Button fullWidth
                         variant="contained"
                         onClick={() => {
-
+                            navigate('/account/create')
                         }}>Buat akun baru untuk pelanggan</Button>
                     <br /> <br />
                 </Container>
