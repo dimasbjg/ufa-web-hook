@@ -5,7 +5,7 @@ import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 import { Button } from "@mui/material";
 
-import { signOut, onAuthStateChanged } from "firebase/auth"
+import { signOut } from "firebase/auth"
 import { auth } from "../firebase.js";
 
 import { useNavigate } from "react-router-dom"
