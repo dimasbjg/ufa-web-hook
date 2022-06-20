@@ -3,6 +3,7 @@ import Login from "./components/Login";
 import Home from "./components/Home";
 import AccountManagement from './components/AccountManagement';
 import CreateAccount from './components/CreateAccount';
+import ChangeRequest from './components/ChangeRequest';
 
 import {
   BrowserRouter as Router,
@@ -19,6 +20,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/account" element={<AccountManagement />} />
           <Route path="/account/create" element={<CreateAccount />} />
+          <Route path="/account/request" element={<ChangeRequest />} />
         </Routes>
       </Router>
     </div>

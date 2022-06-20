@@ -30,7 +30,7 @@ export default function AccountManagement() {
                     <Button fullWidth
                         variant="contained"
                         onClick={() => {
-
+                            navigate('/account/request')
                         }}>Ubah data pelanggan</Button>
                     <br /> <br />
                     <Button fullWidth
