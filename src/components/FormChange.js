@@ -1,35 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box, Container } from "@mui/system";
-import { DatePicker } from "@mui/lab";
+import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Button, Toolbar, TextField, FormControl, RadioGroup, FormLabel, Radio, FormControlLabel } from "@mui/material";
+import { Button, Toolbar, TextField, FormControl, RadioGroup, FormLabel, Radio, FormControlLabel, Typography } from "@mui/material";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase.js";
-import { set, ref } from "firebase/database";
+import { ref, onValue, update, remove } from "firebase/database";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-export default function CreateAccount() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+export default function FormChange() {
+
     const [nama, setNama] = useState("");
     const [nik, setNik] = useState("");
     const [nokk, setNokk] = useState("");
     const [kewarganegaraan, setKewarganegaraan] = useState("");
-    const [kloter, setKloter] = useState(null);
+    const [kloter, setKloter] = useState(0);
     const [tempatLahir, setTempatLahir] = useState("");
     const [date, setDate] = useState(null);
     const [formatedDate, setFormatedData] = useState(null);
-    const [umur, setUmur] = useState(null);
+    const [umur, setUmur] = useState(0);
     const [ayah, setAyah] = useState("");
     const [ibu, setIbu] = useState("");
     const [alamat, setAlamat] = useState("");
     const [kelamin, setKelamin] = useState(true);
-    const [menikah, setMenikah] = useState(true)
+    const [menikah, setMenikah] = useState(true);
+
+    const [loopremove, setloopremove] = useState("loopremove");
+    const [searchParams] = useSearchParams();
+    const [detail, setDetail] = useState("");
+
+    const [open, setOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -40,59 +48,96 @@ export default function CreateAccount() {
 
     const handleChangeMenikah = (e) => {
         var isMenikah = (e.target.value === "true")
-        setMenikah(isMenikah)
-    }
+        setMenikah(isMenikah);
+    };
+
+    const deletePerubahanPermintaan = () => {
+        remove(ref(db, "perubahan/" + searchParams.get('uid')));
+    };
+
+    const handleUpdate = () => {
+        update(ref(db, "Users/" + searchParams.get('uid')), {
+            alamat: alamat,
+            kelamin: kelamin,
+            kewarganegaraan: kewarganegaraan,
+            kloter: kloter,
+            nama: nama,
+            nik: Number(nik),
+            nokk: Number(nokk),
+            pengajuanPerubahan: false,
+            requestverify: false,
+            menikah: menikah,
+            orangtua1: ayah,
+            orangtua2: ibu,
+            tanggallahir: formatedDate,
+            tempatlahir: tempatLahir,
+            umur: Number(umur),
+            verified: false
+        });
+    };
+
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+
 
     useEffect(() => {
         auth.onAuthStateChanged((user) => {
             if (!user) {
-                navigate('/')
+                navigate('/');
             }
-        })
-    })
+        });
+
+        if (loopremove === "loopremove") {
+            onValue(ref(db, "perubahan/" + searchParams.get('uid')), snapshot => {
+                setDetail(snapshot.val().detail);
+
+            })
+            onValue(ref(db, "Users/" + searchParams.get('uid')), snapshot => {
+                const data = snapshot.val();
+                setAlamat(data.alamat);
+                setNama(data.nama);
+                setAyah(data.orangtua1);
+                setKelamin(data.kelamin);
+                setKewarganegaraan(data.kewarganegaraan);
+                setNik(data.nik);
+                setNokk(data.nokk);
+                setKloter(data.kloter);
+                setMenikah(data.menikah);
+                setIbu(data.orangtua2);
+                setTempatLahir(data.tempatlahir);
+                setUmur(data.umur);
+                const year = ('' + data.tanggallahir).substring(0, 4);
+                const month = ('' + data.tanggallahir).substring(4, 6);
+                const day = ('' + data.tanggallahir).substring(6, 8);
+                setDate(new Date(year, month - 1, day));
+                setloopremove("notloopanymore");
+            });
+        }
+    });
 
     return (
-
-        <Box
+        < Box
             component="main"
-            sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}
+            sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }
+            }
         >
+
             <Toolbar />
             <CssBaseline />
             <Container maxWidth="md">
-                <h1>Buat akun untuk pelanggan</h1>
-                <TextField
-                    fullWidth
-                    id="email-field"
-                    label="Email"
-                    variant="outlined"
-                    value={email}
-                    onChange={(e) => {
-                        setEmail(e.target.value)
-                    }}
-                />
-                <br /><br />
-                <TextField
-                    fullWidth
-                    id="password-field"
-                    label="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => {
-                        setPassword(e.target.value)
-                    }}
-                />
-                <br /><br />
-                <TextField
-                    fullWidth
-                    id="password-confirmation-field"
-                    label="Konfirmasi Password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => {
-                        setConfirmPassword(e.target.value)
-                    }}
-                />
+                <Typography variant="h1" component="div" fontSize={40}>
+                    <bold>Ubah data akun pelanggan dengan id: </bold>{searchParams.get('uid')}
+                </Typography>
+                <br />
+                <Typography variant="body2" component="div">
+                    Dengan detail perubahan: <br /> {detail}
+                </Typography>
                 <br /><br />
                 <TextField
                     fullWidth
@@ -243,47 +288,33 @@ export default function CreateAccount() {
                 <Button
                     fullWidth
                     variant="contained"
-                    onClick={() => {
-                        // check field
-                        if (password !== confirmPassword) {
-                            console.log(password)
-                            console.log(confirmPassword)
-                            alert("Konfirmasi password tidak sama dengan Password")
-                            return
-                        }
-                        //register
-                        createUserWithEmailAndPassword(auth, email, password).then(
-                            (result) => {
-                                //insert data
-                                set(ref(db, '/Users/' + result._tokenResponse.localId), {
-                                    alamat: alamat,
-                                    kelamin: kelamin,
-                                    kewarganegaraan: kewarganegaraan,
-                                    kloter: kloter,
-                                    nama: nama,
-                                    nik: Number(nik),
-                                    nokk: Number(nokk),
-                                    pengajuanPerubahan: false,
-                                    requestverify: false,
-                                    menikah: menikah,
-                                    orangtua1: ayah,
-                                    orangtua2: ibu,
-                                    tanggallahir: formatedDate,
-                                    tempatlahir: tempatLahir,
-                                    umur: Number(umur),
-                                    verified: false
-                                })
-                                alert("Akun Berhasil dibuat")
-                                navigate("/account")
-                            }
-                        ).catch((err) => alert(err.message))
-                    }
-                    }>
-                    Daftarkan Akun Pelanggan</Button>
+                    onClick={handleOpen}>
+                    Update Akun Pelanggan</Button>
                 <br />
                 <br />
+                <Dialog
+                    open={open}
+                    onClose={handleClose}
+                >
+                    <DialogTitle id="alert-dialog-title">
+                        {"Konfirmasi update"}
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            Apakah semua data sudah dimasukkan dengan benar? Pastikan semua data yang perlu diperbaharui sudah diisi dengan benar
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Belom</Button>
+                        <Button onClick={() => {
+                            handleUpdate();
+                            deletePerubahanPermintaan();
+                            handleClose();
+                        }} autoFocus>Sudah</Button>
+                    </DialogActions>
+                </Dialog>
             </Container>
-        </Box>
+        </Box >
 
     )
 

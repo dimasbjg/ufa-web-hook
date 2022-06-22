@@ -4,6 +4,7 @@ import Home from "./components/Home";
 import AccountManagement from './components/AccountManagement';
 import CreateAccount from './components/CreateAccount';
 import ChangeRequest from './components/ChangeRequest';
+import FormChange from './components/FormChange';
 
 import {
   BrowserRouter as Router,
@@ -21,6 +22,7 @@ function App() {
           <Route path="/account" element={<AccountManagement />} />
           <Route path="/account/create" element={<CreateAccount />} />
           <Route path="/account/request" element={<ChangeRequest />} />
+          <Route path="/account/change" element={<FormChange />} />
         </Routes>
       </Router>
     </div>
