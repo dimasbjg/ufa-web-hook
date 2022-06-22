@@ -309,6 +309,7 @@ export default function FormChange() {
                         <Button onClick={() => {
                             handleUpdate();
                             deletePerubahanPermintaan();
+                            navigate('/account/request');
                             handleClose();
                         }} autoFocus>Sudah</Button>
                     </DialogActions>
