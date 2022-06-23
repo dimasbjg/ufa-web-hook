@@ -37,7 +37,7 @@ export default function Home() {
                     <Button fullWidth
                         variant="contained"
                         onClick={() => {
-
+                            navigate('/jadwal')
                         }}>Kelola jadwal</Button>
                     <br /> <br />
                     <Button fullWidth

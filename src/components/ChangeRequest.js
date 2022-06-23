@@ -10,11 +10,23 @@ import Typography from '@mui/material/Typography';
 
 import { Link } from 'react-router-dom';
 
-import { db } from '../firebase.js';
+import { auth, db } from '../firebase.js';
 import { ref, onValue } from "firebase/database";
+import { useNavigate } from "react-router-dom"
+
 
 export default function ChangeRequest() {
     const [perubahanList, setPerubahanList] = useState([]);
+    const navigate = useNavigate();
+
+
+    useEffect(() => {
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                navigate('/')
+            }
+        })
+    })
 
     useEffect(() => {
         onValue(ref(db, 'perubahan'), snapshot => {

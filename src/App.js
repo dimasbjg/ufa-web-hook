@@ -5,6 +5,7 @@ import AccountManagement from './components/AccountManagement';
 import CreateAccount from './components/CreateAccount';
 import ChangeRequest from './components/ChangeRequest';
 import FormChange from './components/FormChange';
+import ScheduleManagement from './components/ScheduleManagement';
 
 import {
   BrowserRouter as Router,
@@ -23,6 +24,7 @@ function App() {
           <Route path="/account/create" element={<CreateAccount />} />
           <Route path="/account/request" element={<ChangeRequest />} />
           <Route path="/account/change" element={<FormChange />} />
+          <Route path="/jadwal" element={<ScheduleManagement />} />
         </Routes>
       </Router>
     </div>
