@@ -28,7 +28,6 @@ export default function ScheduleManagement() {
                 let listKloter = [];
                 snapshot.forEach(childSnapshot => {
                     let keyNumber = childSnapshot.key;
-                    // let data = childSnapshot.val();
                     listKloter.push({ "key": keyNumber })
                 });
                 setKloter(listKloter);
@@ -41,7 +40,7 @@ export default function ScheduleManagement() {
         let last = kloter[kloter.length - 1]
         // console.log(parseInt(last.key) + 1)
         set(ref(db, "kloter/" + (parseInt(last.key) + 1)), {
-            kegiatan: ""
+            kegiatan: false
         })
         
     }
