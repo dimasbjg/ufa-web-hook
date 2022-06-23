@@ -7,7 +7,7 @@ import { Button, Grid } from "@mui/material";
 import { auth, db } from "../firebase.js";
 import { ref, onValue, set } from "firebase/database";
 
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom";
 
 export default function ScheduleManagement() {
     const navigate = useNavigate();
@@ -38,7 +38,6 @@ export default function ScheduleManagement() {
 
     const addNewKloter = () => {
         let last = kloter[kloter.length - 1]
-        // console.log(parseInt(last.key) + 1)
         set(ref(db, "kloter/" + (parseInt(last.key) + 1)), {
             kegiatan: false
         })
