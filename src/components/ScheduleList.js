@@ -3,21 +3,34 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
-import { Button, Grid } from "@mui/material";
-import { auth, db } from "../firebase.js";
+import { Button, DialogTitle, Grid } from "@mui/material";
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import { ref, onValue } from "firebase/database";
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { auth, db } from "../firebase.js";
+import { ref, onValue, update, orderByChild, query, push, set } from "firebase/database";
+
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function SceduleList() {
     const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
     const [jadwal, setJadwal] = useState([]);
     const [searchParams] = useSearchParams();
-    const [formatedTime, setFormatedTime] = useState([]);
+    const [openId, setOpenId] = useState(0);
+    const [deleteId, setDeleteId] = useState(0);
+    const [date, setDate] = useState(new Date());
+    const [editKegiatan, setEditKegiatan] = useState();
 
 
     useEffect(() => {
@@ -29,57 +42,152 @@ export default function SceduleList() {
     });
 
     useEffect(() => {
-        onValue(ref(db, 'kloter/' + searchParams.get('id')), snapshot => {
+        let refJadwal = query(ref(db, 'kloter/' + searchParams.get('id')), orderByChild('tanggal'))
+        onValue(refJadwal, snapshot => {
             var dataList = [];
 
             snapshot.forEach(childSnapshot => {
                 let key = childSnapshot.key;
-                let dataString = '' + childSnapshot.val().pukul
+                let dataString = '' + childSnapshot.val().pukul;
                 let minute = dataString.slice(-2);
-                let hour = dataString.substring(0, minute.length - 1);
+                let hour = dataString.substring(0, dataString.length - 2);
                 if (hour.length === 1) {
                     hour = "0" + hour
                 }
                 let time = (hour + ":" + minute);
+                let tanggalString = '' + childSnapshot.val().tanggal;
+                let year = tanggalString.substring(0, 4);
+                let month = tanggalString.substring(4, 6);
+                let date = tanggalString.substring(6, 8);
+                switch (Number(month) - 1) {
+                    case 0: month = "Januari"; break;
+                    case 1: month = "Februari"; break;
+                    case 2: month = "Maret"; break;
+                    case 3: month = "April"; break;
+                    case 4: month = "Mei"; break;
+                    case 5: month = "Juni"; break;
+                    case 6: month = "Juli"; break;
+                    case 7: month = "Agustus"; break;
+                    case 8: month = "September"; break;
+                    case 9: month = "Oktober"; break;
+                    case 10: month = "November"; break;
+                    case 11: month = "Desember"; break;
+                    default: month = "Januari"; break;
+                }
+                let tanggal = date + " " + month + " " + year
                 dataList.push({
                     "key": key,
                     "kegiatan": childSnapshot.val().kegiatan,
                     "hari": childSnapshot.val().hari,
-                    "tanggal": childSnapshot.val().tanggal,
+                    "tanggal": tanggal,
                     "pukul": time
                 })
             })
             setJadwal(dataList);
+            console.log(jadwal[0].pukul)
         })
     }, [searchParams]);
 
-    const generateDate = (data) => {
-        const year = ('' + data.tanggal).substring(0, 4);
-        const month = ('' + data.tanggal).substring(4, 6);
-        const day = ('' + data.tanggal).substring(6, 8);
-        return day + "-" + month + "-" + year
-    }
+    const handleUpdate = (key, kegiatan, dateParam, index) => {
+        if (kegiatan === '' || kegiatan === undefined || kegiatan === null) {
+            alert("Nama kegiatan tidak boleh kosong")
+            return;
+        };
 
-    const generateTime = () => {
-        let time = [];
-        jadwal.forEach(child => {
-            let dataString = '' + child.pukul
-            let minute = dataString.slice(-2);
-            let hour = dataString.substring(0, minute.length - 1);
-            if (hour.length === 1) {
-                hour = "0" + hour
-            }
-            time.push((hour + ":" + minute))
+
+        let tempJadwal = jadwal;
+        let itemJadwal = tempJadwal[index];
+        itemJadwal.kegiatan = kegiatan;
+        let formatedDate = ((dateParam.getFullYear()) * 10000) +
+            ((dateParam.getMonth() + 1) * 100) +
+            (dateParam.getDate());
+        let hari = dateParam.getDay()
+        switch (hari) {
+            case 0: hari = "Minggu"; break;
+            case 1: hari = "Senin"; break;
+            case 2: hari = "Selasa"; break;
+            case 3: hari = "Rabu"; break;
+            case 4: hari = "Kamis"; break;
+            case 5: hari = "Jum'at"; break;
+            case 6: hari = "Sabtu"; break;
+            default: hari = "Minggu"; break;
+        }
+        let time = ((dateParam.getHours() * 100) + dateParam.getMinutes())
+        itemJadwal.tanggal = formatedDate;
+        itemJadwal.pukul = time;
+        itemJadwal.hari = hari;
+        console.log(itemJadwal);
+
+        //update here
+        update(ref(db, '/kloter/' + searchParams.get('id') + '/' + key), {
+            kegiatan: itemJadwal.kegiatan,
+            tanggal: itemJadwal.tanggal,
+            pukul: time,
+            hari: itemJadwal.hari
+        }).catch((err) => {
+            alert(err.message);
+            return;
         })
 
-        setFormatedTime(time)
+        setEditKegiatan("");
+        setOpenId(false);
     }
 
-    const handleClick = () => {
-        console.log(jadwal);
+    const handleAdd = (kegiatan, dateParam) => {
+        let formatedDate = ((dateParam.getFullYear()) * 10000) +
+            ((dateParam.getMonth() + 1) * 100) +
+            (dateParam.getDate());
+        let hari = dateParam.getDay()
+        switch (hari) {
+            case 0: hari = "Minggu"; break;
+            case 1: hari = "Senin"; break;
+            case 2: hari = "Selasa"; break;
+            case 3: hari = "Rabu"; break;
+            case 4: hari = "Kamis"; break;
+            case 5: hari = "Jum'at"; break;
+            case 6: hari = "Sabtu"; break;
+            default: hari = "Minggu"; break;
+        }
+        let time = ((dateParam.getHours() * 100) + dateParam.getMinutes());
+
+        const postRef = ref(db, '/coba')
+        const newPostRef = push(postRef);
+
+        set(ref(db, '/kloter/' + searchParams.get('id') + '/' + newPostRef.key), {
+            kegiatan: kegiatan,
+            tanggal: formatedDate,
+            hari: hari,
+            pukul: time
+        }).then(() => alert("Data berhasil ditambahkan")).catch((err) => alert(err.message));
+        setOpen(false)
+
     }
 
-    const renderList = jadwal.map((value) => (
+    const handleOpen = () => {
+        setOpen(true);
+    }
+
+    const handleClose = () => {
+        setOpen(false);
+    }
+
+    const handleClickOpenId = id => {
+        setOpenId(id);
+    };
+
+    const handleClickCloseId = () => {
+        setOpenId(false);
+    };
+
+    const handleClickDeleteId = id => {
+        setDeleteId(id);
+    };
+
+    const handleClickCloseDeleteId = () => {
+        setDeleteId(false);
+    };
+
+    const renderList = jadwal.map((value, index) => (
         <Grid item sm={1} md={1} key={value.key}>
             <Card>
                 <CardContent>
@@ -91,13 +199,71 @@ export default function SceduleList() {
                         Pukul: {value.pukul}<br />
                         Hari: {value.hari}<br />
                     </Typography>
+                    <Dialog open={deleteId === value} onClose={handleClickCloseDeleteId}>
+                        <DialogContent>
+                            <DialogTitle>
+                                Hapus jadwal berikut?
+                            </DialogTitle>
+                            <DialogContentText>
+                                Apakah Anda yakin untuk menghapus jadwal berikut?<br />
+                                Jadwal yang sudah terhapus tidak dapat dikembalikan lagi dan harus mengisi ulang untuk mengembalikan jadwal yang telah dihapus
+                            </DialogContentText>
+                            <DialogActions>
+                                <Button onClick={handleClickCloseDeleteId}>Batal</Button>
+                                <Button onClick={handleClickCloseDeleteId}>Hapus</Button>
+                            </DialogActions>
+                        </DialogContent>
+                    </Dialog>
+                    <Dialog open={openId === value} onClose={handleClickCloseId}>
+                        <DialogContent>
+                            <DialogContentText>
+                                Apakah Anda ingin merubah data berikut<br />
+                                Kegiatan: {value.kegiatan}<br />
+                                Tanggal: {value.tanggal}<br />
+                                Pukul: {value.pukul}<br />
+                                Hari: {value.hari}<br />
+                            </DialogContentText>
+                            <TextField
+                                multiline
+                                rows={4}
+                                autoFocus
+                                margin="dense"
+                                id="kegiatan"
+                                label="Kegiatan"
+                                onChange={(e) => setEditKegiatan(e.target.value)}
+                                fullWidth
+                                variant="outlined"
+                            /> <br /> <br />
+                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                <DateTimePicker
+                                    renderInput={(props) => <TextField {...props} />}
+                                    label="Tanggal dan Waktu"
+                                    value={date}
+                                    inputFormat="dd/MM/yyyy HH:mm"
+                                    onChange={(newValue) => {
+                                        setDate(newValue);
+                                    }}
+                                />
+                            </LocalizationProvider>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleClickCloseId}>Batal</Button>
+                            <Button onClick={() => {
+                                handleUpdate(value.key, editKegiatan, date, index)
+                            }}>OK</Button>
+                        </DialogActions>
+                    </Dialog>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'end' }}>
-                    <Button size="small" >Delete</Button>
-                    <Button size="small" component={Link} to={"/jadwal/detail?id=" + value.key.trim()}>Pilih</Button>
+                    <Button size="small"
+                        onClick={() => handleClickDeleteId(value)}
+                    >Hapus</Button>
+                    <Button size="small"
+                        onClick={() => handleClickOpenId(value)}
+                    >Ubah</Button>
                 </CardActions>
-            </Card>
-        </Grid>
+            </Card> <br />
+        </Grid >
     ))
 
     return (
@@ -107,9 +273,46 @@ export default function SceduleList() {
             <CssBaseline />
             <Container maxWidth="md">
                 {renderList}
-                <Button onClick={handleClick}>Log</Button>
+                <Button onClick={handleOpen}>Tambah Jadwal</Button>
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogContent>
+                        <DialogTitle>
+                            Buat Jadwal baru
+                        </DialogTitle>
+                        <DialogContentText>
+                            Harap isi detail jadwal yang akan dibuat! <br />
+                        </DialogContentText>
+                        <TextField
+                            autoFocus
+                            multiline
+                            rows={4}
+                            margin="dense"
+                            id="kegiatan"
+                            label="Kegiatan"
+                            onChange={(e) => setEditKegiatan(e.target.value)}
+                            fullWidth
+                            variant="outlined"
+                        /> <br /> <br />
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                            <DateTimePicker
+                                renderInput={(props) => <TextField {...props} />}
+                                label="Tanggal dan Waktu"
+                                value={date}
+                                inputFormat="dd/MM/yyyy HH:mm"
+                                onChange={(newValue) => {
+                                    setDate(newValue);
+                                }}
+                            />
+                        </LocalizationProvider>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Batal</Button>
+                        <Button onClick={() => {
+                            handleAdd(editKegiatan, date)
+                        }}>OK</Button>
+                    </DialogActions>
+                </Dialog>
             </Container>
-
-        </Box>
+        </Box >
     )
 }
