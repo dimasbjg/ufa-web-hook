@@ -84,7 +84,6 @@ export default function SceduleList() {
                 })
             })
             setJadwal(dataList);
-            console.log(jadwal[0].pukul)
         })
     }, [searchParams]);
 
