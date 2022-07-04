@@ -18,7 +18,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 import { auth, db } from "../firebase.js";
-import { ref, onValue, update, orderByChild, query, push, set } from "firebase/database";
+import { ref, onValue, update, orderByChild, query, push, set, remove } from "firebase/database";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -162,6 +162,10 @@ export default function SceduleList() {
 
     }
 
+    const handleDelete = (key) => {
+        remove(ref(db, '/kloter/' + searchParams.get('id') + '/' + key))
+    }
+
     const handleOpen = () => {
         setOpen(true);
     }
@@ -204,12 +208,16 @@ export default function SceduleList() {
                                 Hapus jadwal berikut?
                             </DialogTitle>
                             <DialogContentText>
+                                Kegiatan: {value.kegiatan}<br />
+                                Tanggal: {value.tanggal}<br />
+                                Pukul: {value.pukul}<br />
+                                Hari: {value.hari}<br />
                                 Apakah Anda yakin untuk menghapus jadwal berikut?<br />
                                 Jadwal yang sudah terhapus tidak dapat dikembalikan lagi dan harus mengisi ulang untuk mengembalikan jadwal yang telah dihapus
                             </DialogContentText>
                             <DialogActions>
                                 <Button onClick={handleClickCloseDeleteId}>Batal</Button>
-                                <Button onClick={handleClickCloseDeleteId}>Hapus</Button>
+                                <Button onClick={() => handleDelete(value.key)}>Hapus</Button>
                             </DialogActions>
                         </DialogContent>
                     </Dialog>
