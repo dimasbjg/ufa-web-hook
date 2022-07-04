@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Toolbar from '@mui/material/Toolbar';
 import { Button, DialogTitle, Grid } from "@mui/material";
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
@@ -275,12 +274,13 @@ export default function SceduleList() {
 
     return (
         <Box component="main"
-            sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}>
-            <Toolbar />
+            sx={{ flexGrow: 1, bgcolor: "background.default" }}>
             <CssBaseline />
+            <br />
+            <br />
             <Container maxWidth="md">
+                <Button onClick={handleOpen} variant="outlined">Tambah Jadwal</Button>
                 {renderList}
-                <Button onClick={handleOpen}>Tambah Jadwal</Button>
                 <Dialog open={open} onClose={handleClose}>
                     <DialogContent>
                         <DialogTitle>

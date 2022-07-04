@@ -10,7 +10,7 @@ import { auth } from "../firebase.js";
 
 import { useNavigate } from "react-router-dom"
 
-export default function Home() {
+export default function HomePage() {
     const navigate = useNavigate();
 
     useEffect(() => {
