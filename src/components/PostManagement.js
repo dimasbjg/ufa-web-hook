@@ -18,7 +18,7 @@ import { ref, onValue, update, orderByChild, query, push, set, remove } from "fi
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-function ReadMore({ children, maxCharacterCount = 100 }) {
+function ReadMore({ children }) {
     const text = children;
 
     const [isTruncated, setIsTruncated] = useState(true);
@@ -30,7 +30,7 @@ function ReadMore({ children, maxCharacterCount = 100 }) {
     }
 
     return (
-        <Typography align='justify' sx={{ fontSize: 14, fontWeight: 'medium' }}>
+        <Typography align='justify' sx={{ fontSize: 14, fontWeight: 'small' }}>
             {resultString}
             <Button size="small" onClick={toggleIsTruncated}>
                 {isTruncated ? "Baca lebih lengkap" : "Ciutkan"}
@@ -43,7 +43,7 @@ export default function PostManagement() {
     const navigate = useNavigate();
     const [editId, setEditId] = useState(0);
     const [deleteId, setDeleteId] = useState(0);
-    const [addId, setAddId] = useState(false);
+    const [add, setAdd] = useState(false);
     const [articles, setArticles] = useState([]);
     const [time, setTime] = useState();
 
@@ -85,6 +85,10 @@ export default function PostManagement() {
         setEditId(id);
     }
 
+    const handleAdd = () => {
+        setAdd(true);
+    }
+
 
     //all close dialog
     const handleCloseDelete = () => {
@@ -93,6 +97,10 @@ export default function PostManagement() {
 
     const handleCloseEdit = () => {
         setEditId(false)
+    }
+
+    const handleCloseAdd = () => {
+        setAdd(false);
     }
 
 
@@ -161,7 +169,24 @@ export default function PostManagement() {
     return (
         <Box component='main' sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}>
             <Container maxWidth="md">
+                <Button onClick={handleAdd} variant="outlined">Posting artikel baru</Button> <br /> <br />
                 {renderList}
+
+                {/* Dialog Add */}
+                <Dialog open={add} onClose={handleCloseAdd}>
+                    <DialogContent>
+                        <DialogTitle>
+                            Posting artikel baru untuk informasi pengguna
+                        </DialogTitle>
+                        <DialogContentText>
+                        </DialogContentText>
+                        
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseAdd}>Batal</Button>
+                        <Button onClick={handleCloseAdd}>OK</Button>
+                    </DialogActions>
+                </Dialog>
                 <Button onClick={handleTimeStamp}>get Time</Button>
                 <Button onClick={() => console.log(articles)}>Check</Button>
             </Container>
