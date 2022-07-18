@@ -7,6 +7,7 @@ import ChangeRequest from './components/ChangeRequest';
 import FormChange from './components/FormChange';
 import ScheduleManagement from './components/ScheduleManagement';
 import ScheduleList from './components/ScheduleList';
+import PostManagement from './components/PostManagement';
 
 import IconButton from '@mui/material/IconButton';
 import Home from '@mui/icons-material/Home';
@@ -45,6 +46,7 @@ function App() {
           <Route path="/account/change" element={<FormChange />} />
           <Route path="/jadwal" element={<ScheduleManagement />} />
           <Route path='/jadwal/kloter' element={<ScheduleList />} />
+          <Route path='/informasi' element={<PostManagement />} />
         </Routes>
 
 

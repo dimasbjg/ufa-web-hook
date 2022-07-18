@@ -49,7 +49,7 @@ export default function HomePage() {
                     <Button fullWidth
                         variant="contained"
                         onClick={() => {
-
+                            navigate('/informasi')
                         }}>Kelola informasi seputar umroh</Button>
                     <br /> <br />
                     <Button fullWidth

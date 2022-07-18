@@ -41,7 +41,7 @@ export default function SceduleList() {
     });
 
     useEffect(() => {
-        let refJadwal = query(ref(db, 'kloter/' + searchParams.get('id')), orderByChild('tanggal'))
+        let refJadwal = query(ref(db, 'kloter/' + searchParams.get('id')),  ('tanggal'))
         onValue(refJadwal, snapshot => {
             var dataList = [];
 
@@ -91,7 +91,7 @@ export default function SceduleList() {
             alert("Nama kegiatan tidak boleh kosong")
             return;
         };
-
+        
 
         let tempJadwal = jadwal;
         let itemJadwal = tempJadwal[index];
