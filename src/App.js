@@ -28,7 +28,7 @@ function App() {
       <Router>
         <AppBar position="static" color="primary" enableColorOnDark>
           <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="home" sx={{ mr: 2 }} component={Link} to="/">
+            <IconButton edge="start" color="inherit" aria-label="home" sx={{ mr: 2 }} component={Link} to="/home">
               <Home />
             </IconButton>
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
