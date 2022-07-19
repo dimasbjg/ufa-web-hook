@@ -140,7 +140,8 @@ export default function PostManagement() {
             timestamp: time
         }).then(() => alert("Berhasil membuat postingan baru")).catch((err) => alert(err.message));
         setAdd(false);
-
+        setJudul();
+        setIsi();
 
     }
 
