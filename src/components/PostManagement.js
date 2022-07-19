@@ -48,6 +48,8 @@ export default function PostManagement() {
     const [time, setTime] = useState();
     const [judul, setJudul] = useState();
     const [isi, setIsi] = useState();
+    const [tempJudul, setTempJudul] = useState();
+    const [tempIsi, setTempIsi] = useState();
 
     useEffect(() => {
         auth.onAuthStateChanged((user) => {
@@ -67,7 +69,8 @@ export default function PostManagement() {
                 tempArticles.push({
                     'key': childSnapshot.key,
                     'judul': childSnapshot.val().judul,
-                    'isi': childSnapshot.val().isi
+                    'isi': childSnapshot.val().isi,
+                    'timestamp': childSnapshot.val().timestamp
                 });
             });
 
@@ -88,6 +91,8 @@ export default function PostManagement() {
     }
 
     const handleClickEditDialog = id => {
+        setTempJudul(id.judul);
+        setTempIsi(id.isi);
         setEditId(id);
     }
 
@@ -115,6 +120,7 @@ export default function PostManagement() {
     //delete
     const handleDelete = key => {
         remove(ref(db, '/informasi/' + key))
+        setDeleteId(false);
     }
 
     //insert
@@ -129,7 +135,7 @@ export default function PostManagement() {
             return;
         }
 
-        
+
 
         let postRef = ref(db, '/informasi');
         const newPostRef = push(postRef);
@@ -143,6 +149,17 @@ export default function PostManagement() {
         setJudul();
         setIsi();
 
+    }
+
+    const handleUpdate = (value) => {
+        update(ref(db,'/informasi/' + value.key), {
+            judul: tempJudul,
+            isi: tempIsi,
+            timestamp: value.timestamp
+        }).then(() => alert("Update berhasil~~!!!")).catch((err) => alert(err.message));
+        setTempJudul();
+        setTempIsi();
+        setEditId(false);
     }
 
 
@@ -189,10 +206,34 @@ export default function PostManagement() {
                             <DialogContentText>
                                 {/* Content */}
                             </DialogContentText>
+                            <TextField
+                                autoFocus
+                                multiline
+                                rows={2}
+                                margin="dense"
+                                id="judul"
+                                label="Judul"
+                                value={tempJudul}
+                                onChange={(e) => setTempJudul(e.target.value)}
+                                fullWidth
+                                variant="outlined"
+                            />
+                            <br />
+                            <TextField
+                                autoFocus
+                                multiline
+                                rows={4}
+                                margin="dense"
+                                id="isi"
+                                label="Isi"
+                                value={tempIsi}
+                                onChange={(e) => setTempIsi(e.target.value)}
+                                fullWidth
+                                variant="outlined" />
                             <DialogActions>
                                 {/* Action */}
                                 <Button onClick={handleCloseEditDialog}>Batal</Button>
-                                <Button onClick={handleCloseEditDialog}>Simpan</Button>
+                                <Button onClick={() => handleUpdate(value)}>Simpan</Button>
                             </DialogActions>
                         </DialogContent>
                     </Dialog>
@@ -234,8 +275,7 @@ export default function PostManagement() {
                             label="Judul"
                             onChange={(e) => setJudul(e.target.value)}
                             fullWidth
-                            variant="outlined">
-                        </TextField>
+                            variant="outlined" />
                         <br />
                         <TextField
                             autoFocus
@@ -246,8 +286,7 @@ export default function PostManagement() {
                             label="Isi"
                             onChange={(e) => setIsi(e.target.value)}
                             fullWidth
-                            variant="outlined">
-                        </TextField>
+                            variant="outlined" />
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleCloseAddDialog}>Batal</Button>
