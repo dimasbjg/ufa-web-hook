@@ -16,7 +16,7 @@ import Typography from '@mui/material/Typography';
 import { auth, db } from "../firebase.js";
 import { ref, onValue, update, orderByChild, query, push, set, remove } from "firebase/database";
 
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function ReadMore({ children }) {
     const text = children;
