@@ -46,6 +46,8 @@ export default function PostManagement() {
     const [add, setAdd] = useState(false);
     const [articles, setArticles] = useState([]);
     const [time, setTime] = useState();
+    const [judul, setJudul] = useState();
+    const [isi, setIsi] = useState();
 
     useEffect(() => {
         auth.onAuthStateChanged((user) => {
@@ -62,7 +64,11 @@ export default function PostManagement() {
             let tempArticles = [];
 
             snapshot.forEach(childSnapshot => {
-                tempArticles.push(childSnapshot.val());
+                tempArticles.push({
+                    'key': childSnapshot.key,
+                    'judul': childSnapshot.val().judul,
+                    'isi': childSnapshot.val().isi
+                });
             });
 
             tempArticles.reverse();
@@ -77,35 +83,71 @@ export default function PostManagement() {
     }
 
     //all open dialog
-    const handleClickDeleteId = id => {
+    const handleClickDeleteDialog = id => {
         setDeleteId(id);
     }
 
-    const handleClickEditId = id => {
+    const handleClickEditDialog = id => {
         setEditId(id);
     }
 
-    const handleAdd = () => {
+    const handleAddDialog = () => {
+        var currentTimeInMilliseconds = Date.now(); // unix timestamp in milliseconds
+        setTime(currentTimeInMilliseconds);
         setAdd(true);
     }
 
 
     //all close dialog
-    const handleCloseDelete = () => {
+    const handleCloseDeleteDialog = () => {
         setDeleteId(false);
     }
 
-    const handleCloseEdit = () => {
+    const handleCloseEditDialog = () => {
         setEditId(false)
     }
 
-    const handleCloseAdd = () => {
+    const handleCloseAddDialog = () => {
         setAdd(false);
     }
 
+    //handle database
+    //delete
+    const handleDelete = key => {
+        remove(ref(db, '/informasi/' + key))
+    }
+
+    //insert
+    const handleAdd = () => {
+        if (judul === '' || judul === null || judul === undefined) {
+            alert('Judul tidak boleh kosong');
+            return;
+        }
+
+        if (isi === '' || isi === null || isi === undefined) {
+            alert('Konten artikel tidak boleh berisi informasi kosong');
+            return;
+        }
+
+        
+
+        let postRef = ref(db, '/informasi');
+        const newPostRef = push(postRef);
+
+        set(ref(db, '/informasi/' + newPostRef.key), {
+            judul: judul,
+            isi: isi,
+            timestamp: time
+        }).then(() => alert("Berhasil membuat postingan baru")).catch((err) => alert(err.message));
+        setAdd(false);
+
+
+    }
+
+
 
     const renderList = articles.map((value, index) => (
-        <Grid item sm={1} md={1} key={index}>
+        <Grid item sm={1} md={1} key={value.key}>
             <Card>
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div">
@@ -117,25 +159,27 @@ export default function PostManagement() {
 
                     {/* Dialog */}
                     {/* Dialog Delete */}
-                    <Dialog open={deleteId === value} onClose={handleCloseDelete}>
+                    <Dialog open={deleteId === value} onClose={handleCloseDeleteDialog}>
                         <DialogContent>
                             <DialogTitle>
                                 {/* Title */}
-                                Hapus artikel berikut? {value.judul}
+                                Hapus artikel berikut?
                             </DialogTitle>
                             <DialogContentText>
                                 {/* Content */}
+                                Hapus artikel dengan judul {value.judul} <br />
+                                Artikel yang telah dihapus tidak dapat dikembalikan kembali !!!
                             </DialogContentText>
                             <DialogActions>
                                 {/* Action */}
-                                <Button onClick={handleCloseDelete}>Batal</Button>
-                                <Button onClick={handleCloseDelete}>Hapus</Button>
+                                <Button onClick={handleCloseDeleteDialog}>Batal</Button>
+                                <Button onClick={() => handleDelete(value.key)}>Hapus</Button>
                             </DialogActions>
                         </DialogContent>
                     </Dialog>
 
                     {/* Dialog Edit */}
-                    <Dialog open={editId === value} onClose={handleCloseEdit}>
+                    <Dialog open={editId === value} onClose={handleCloseEditDialog}>
                         <DialogContent>
                             <DialogTitle>
                                 {/* Title */}
@@ -146,8 +190,8 @@ export default function PostManagement() {
                             </DialogContentText>
                             <DialogActions>
                                 {/* Action */}
-                                <Button onClick={handleCloseEdit}>Batal</Button>
-                                <Button onClick={handleCloseEdit}>Simpan</Button>
+                                <Button onClick={handleCloseEditDialog}>Batal</Button>
+                                <Button onClick={handleCloseEditDialog}>Simpan</Button>
                             </DialogActions>
                         </DialogContent>
                     </Dialog>
@@ -155,10 +199,10 @@ export default function PostManagement() {
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'end' }}>
                     <Button size="small"
-                        onClick={() => handleClickDeleteId(value)}
+                        onClick={() => handleClickDeleteDialog(value)}
                     >Hapus</Button>
                     <Button size="small"
-                        onClick={() => handleClickEditId(value)}
+                        onClick={() => handleClickEditDialog(value)}
                     >Ubah</Button>
                 </CardActions>
             </Card>
@@ -169,22 +213,44 @@ export default function PostManagement() {
     return (
         <Box component='main' sx={{ flexGrow: 1, bgcolor: "background.default", p: 3 }}>
             <Container maxWidth="md">
-                <Button onClick={handleAdd} variant="outlined">Posting artikel baru</Button> <br /> <br />
+                <Button onClick={handleAddDialog} variant="outlined">Posting artikel baru</Button> <br /> <br />
                 {renderList}
 
                 {/* Dialog Add */}
-                <Dialog open={add} onClose={handleCloseAdd}>
+                <Dialog open={add} onClose={handleCloseAddDialog}>
                     <DialogContent>
                         <DialogTitle>
                             Posting artikel baru untuk informasi pengguna
                         </DialogTitle>
                         <DialogContentText>
                         </DialogContentText>
-                        
+                        <TextField
+                            autoFocus
+                            multiline
+                            rows={2}
+                            margin="dense"
+                            id="judul"
+                            label="Judul"
+                            onChange={(e) => setJudul(e.target.value)}
+                            fullWidth
+                            variant="outlined">
+                        </TextField>
+                        <br />
+                        <TextField
+                            autoFocus
+                            multiline
+                            rows={4}
+                            margin="dense"
+                            id="isi"
+                            label="Isi"
+                            onChange={(e) => setIsi(e.target.value)}
+                            fullWidth
+                            variant="outlined">
+                        </TextField>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={handleCloseAdd}>Batal</Button>
-                        <Button onClick={handleCloseAdd}>OK</Button>
+                        <Button onClick={handleCloseAddDialog}>Batal</Button>
+                        <Button onClick={handleAdd}>OK</Button>
                     </DialogActions>
                 </Dialog>
                 <Button onClick={handleTimeStamp}>get Time</Button>
